@@ -66,7 +66,7 @@ function createWindow() {
 
     mainWindow.once('ready-to-show', () => {
         mainWindow.show();
-        
+
         // Apply dark theme to title bar on Windows
         if (process.platform === 'win32') {
             mainWindow.setTitleBarOverlay({
@@ -187,8 +187,9 @@ function setupMenu() {
 
 function setupGlobalShortcuts() {
     // Global hotkey for toggle recording (Ctrl+Win on Windows, Cmd+Ctrl on Mac)
-    const toggleShortcut = process.platform === 'darwin' ? 'Cmd+Ctrl+Space' : 'Ctrl+Super+Space';
-    
+    // Global hotkey for toggle recording
+    const toggleShortcut = process.platform === 'darwin' ? 'Cmd+Ctrl+Space' : 'Ctrl+Alt+Space';
+
     try {
         const success = globalShortcut.register(toggleShortcut, () => {
             if (mainWindow && !mainWindow.isDestroyed()) {
@@ -196,20 +197,20 @@ function setupGlobalShortcuts() {
                 console.log('Global shortcut triggered');
             }
         });
-        
+
         if (success) {
             console.log(`Global shortcut registered: ${toggleShortcut}`);
         } else {
             console.error(`Failed to register global shortcut: ${toggleShortcut}`);
             // Try alternative shortcuts
-            const altShortcut = process.platform === 'darwin' ? 'Cmd+Option+Space' : 'Ctrl+Alt+Space';
+            const altShortcut = process.platform === 'darwin' ? 'Cmd+Option+Space' : 'Ctrl+Super+Space';
             const altSuccess = globalShortcut.register(altShortcut, () => {
                 if (mainWindow && !mainWindow.isDestroyed()) {
                     mainWindow.webContents.send('global-toggle-recording');
                     console.log('Alternative global shortcut triggered');
                 }
             });
-            
+
             if (altSuccess) {
                 console.log(`Alternative global shortcut registered: ${altShortcut}`);
             }
@@ -229,12 +230,12 @@ ipcMain.handle('get-settings', (event, key) => {
 
 ipcMain.handle('set-setting', (event, key, value) => {
     store.set(key, value);
-    
+
     // Update OpenAI client if API key changed
     if (key === 'api_key') {
         updateOpenAIClient();
     }
-    
+
     return true;
 });
 
@@ -258,7 +259,7 @@ ipcMain.handle('transcribe-audio', async (event, audioBuffer, settings) => {
         // Create temporary file
         const tempDir = require('os').tmpdir();
         const tempFile = path.join(tempDir, `speech2text_${Date.now()}.wav`);
-        
+
         // Write audio buffer to file
         fs.writeFileSync(tempFile, audioBuffer);
 
@@ -292,7 +293,7 @@ ipcMain.handle('save-transcript', async (event, text, filename) => {
             const saveDir = outputSettings.save_directory || require('os').homedir();
             const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, -5);
             const autoFilename = path.join(saveDir, `transcript_${timestamp}.${outputSettings.file_format || 'txt'}`);
-            
+
             fs.writeFileSync(autoFilename, text, 'utf8');
             return autoFilename;
         }

@@ -6,6 +6,7 @@ __pycache__/
 *.py[oc]
 build/
 dist/
+dist-electron/
 wheels/
 *.egg-info
 
@@ -33,3 +34,4 @@ config.json
 .DS_Store
 Thumbs.db
 desktop.ini
+dist-electron/

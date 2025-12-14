@@ -1,0 +1,49 @@
+
+> voiceforge@1.0.0 build
+> npm run build-renderer && npm run build-main
+
+
+> voiceforge@1.0.0 build-renderer
+> webpack --mode production
+
+asset bundle.js 22.3 KiB [compared for emit] [minimized] (name: main)
+asset index.html 15.1 KiB [compared for emit]
+./renderer/src/js/main.js 43.6 KiB [built] [code generated]
+webpack 5.101.0 compiled successfully in 342 ms
+
+> voiceforge@1.0.0 build-main
+> webpack --config webpack.main.config.js --mode production
+
+assets by status 4.96 KiB [cached] 1 asset
+./electron/main.js 9.97 KiB [built] [code generated]
+external "electron" 42 bytes [built] [code generated]
+external "path" 42 bytes [built] [code generated]
+external "fs" 42 bytes [built] [code generated]
+external "electron-store" 42 bytes [built] [code generated]
+external "openai" 42 bytes [built] [code generated]
+external "os" 42 bytes [optional] [built] [code generated]
+
+ERROR in ./electron/main.js 342:4-30
+Module not found: Error: Can't resolve 'electron-reload' in '/home/silverion/projects/hobby/voiceforge/electron'
+resolve 'electron-reload' in '/home/silverion/projects/hobby/voiceforge/electron'
+  Parsed request is a module
+  using description file: /home/silverion/projects/hobby/voiceforge/package.json (relative path: ./electron)
+    resolve as module
+      /home/silverion/projects/hobby/voiceforge/electron/node_modules doesn't exist or is not a directory
+      looking for modules in /home/silverion/projects/hobby/voiceforge/node_modules
+        single file module
+          using description file: /home/silverion/projects/hobby/voiceforge/package.json (relative path: ./node_modules/electron-reload)
+            no extension
+              /home/silverion/projects/hobby/voiceforge/node_modules/electron-reload doesn't exist
+            .js
+              /home/silverion/projects/hobby/voiceforge/node_modules/electron-reload.js doesn't exist
+            .json
+              /home/silverion/projects/hobby/voiceforge/node_modules/electron-reload.json doesn't exist
+        /home/silverion/projects/hobby/voiceforge/node_modules/electron-reload doesn't exist
+      /home/silverion/projects/hobby/node_modules doesn't exist or is not a directory
+      /home/silverion/projects/node_modules doesn't exist or is not a directory
+      /home/silverion/node_modules doesn't exist or is not a directory
+      /home/node_modules doesn't exist or is not a directory
+      /node_modules doesn't exist or is not a directory
+
+webpack 5.101.0 compiled with 1 error in 183 ms
