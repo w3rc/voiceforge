@@ -12,6 +12,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
     // Audio transcription
     transcribeAudio: (audioBuffer, settings) => ipcRenderer.invoke('transcribe-audio', audioBuffer, settings),
 
+    // Clipboard & Auto-paste
+    copyToClipboard: (text) => ipcRenderer.invoke('copy-to-clipboard', text),
+    pasteText: () => ipcRenderer.invoke('paste-text'),
+
     // File operations
     saveTranscript: (text, filename) => ipcRenderer.invoke('save-transcript', text, filename),
     showSaveDialog: (options) => ipcRenderer.invoke('show-save-dialog', options),

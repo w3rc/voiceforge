@@ -308,9 +308,31 @@ ipcMain.handle('show-save-dialog', async (event, options) => {
     return result;
 });
 
+const { exec } = require('child_process');
+
 ipcMain.handle('show-message-box', async (event, options) => {
     const result = await dialog.showMessageBox(mainWindow, options);
     return result;
+});
+
+ipcMain.handle('copy-to-clipboard', (event, text) => {
+    clipboard.writeText(text);
+    return true;
+});
+
+ipcMain.handle('paste-text', async (event) => {
+    return new Promise((resolve, reject) => {
+        // Use xdotool to simulate Ctrl+V
+        // --clearmodifiers ensures no other keys are stuck
+        exec('xdotool key --clearmodifiers ctrl+v', (error, stdout, stderr) => {
+            if (error) {
+                console.error(`exec error: ${error}`);
+                resolve(false);
+                return;
+            }
+            resolve(true);
+        });
+    });
 });
 
 

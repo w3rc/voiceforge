@@ -739,7 +739,17 @@ class Speech2TextApp {
         this.addActivityItem(text);
 
         // Auto-copy to clipboard
-        navigator.clipboard.writeText(text).catch(err => {
+        window.electronAPI.copyToClipboard(text).then(() => {
+            console.log('Copied to clipboard');
+
+            // Auto-paste if user is not focused on the app (assuming they want to paste elsewhere)
+            // Or just always try to paste if it's a global shortcut trigger?
+            // For now, let's auto-paste if the window is not focused or if we assume the user switched apps
+            // But wait, if they clicked "record" in the app, they are focused.
+            // If they used global shortcut, they might be elsewhere.
+            // Let's just try to paste. xdotool sends to active window.
+            window.electronAPI.pasteText().catch(err => console.warn('Auto-paste failed:', err));
+        }).catch(err => {
             console.warn('Failed to copy to clipboard:', err);
         });
 
@@ -798,7 +808,7 @@ class Speech2TextApp {
 
             // Click to copy full text
             itemElement.addEventListener('click', () => {
-                navigator.clipboard.writeText(item.text).then(() => {
+                window.electronAPI.copyToClipboard(item.text).then(() => {
                     // Visual feedback
                     itemElement.style.background = 'var(--accent-primary)';
                     setTimeout(() => {

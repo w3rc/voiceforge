@@ -39,5 +39,6 @@ EOF
 # 4. Update desktop database
 echo "Updating desktop database..."
 update-desktop-database "$HOME/.local/share/applications" 2>/dev/null || true
+gtk-update-icon-cache -f -t "$HOME/.local/share/icons/hicolor" 2>/dev/null || true
 
 echo "Installation complete! VoiceForge should now appear in your applications list."
