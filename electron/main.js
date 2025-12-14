@@ -368,12 +368,32 @@ ipcMain.handle('paste-text', async (event) => {
     });
 });
 
+// Ensure ydotoold is running for Wayland auto-paste
+function ensureYdotoold() {
+    if (process.env.XDG_SESSION_TYPE !== 'wayland') return;
+
+    exec('pgrep ydotoold', (error, stdout) => {
+        if (error || !stdout.trim()) {
+            console.log('[Main] Starting ydotoold daemon for Wayland auto-paste...');
+            exec('ydotoold &', (err) => {
+                if (err) {
+                    console.warn('[Main] Failed to start ydotoold:', err.message);
+                } else {
+                    console.log('[Main] ydotoold started successfully');
+                }
+            });
+        } else {
+            console.log('[Main] ydotoold already running');
+        }
+    });
+}
 
 // App event handlers
 app.whenReady().then(() => {
     createWindow();
     setupMenu();
     setupGlobalShortcuts();
+    ensureYdotoold();
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
