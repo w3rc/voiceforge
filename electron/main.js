@@ -333,6 +333,8 @@ ipcMain.handle('copy-to-clipboard', (event, text) => {
 ipcMain.handle('paste-text', async (event) => {
     console.log('[Main] Attempting auto-paste');
     const isWayland = process.env.XDG_SESSION_TYPE === 'wayland';
+    const uid = process.getuid ? process.getuid() : 1000;
+    const socketPath = `/run/user/${uid}/.ydotool_socket`;
 
     return new Promise((resolve, reject) => {
         let command;
@@ -340,11 +342,12 @@ ipcMain.handle('paste-text', async (event) => {
             // Use ydotool for Wayland (must be installed: sudo dnf install ydotool)
             // ydotool uses raw keycodes: 29=Ctrl, 47=V
             // Format: keycode:1 (press) keycode:0 (release)
-            command = 'sleep 0.6 && ydotool key 29:1 47:1 47:0 29:0';
+            // Use full path and set socket explicitly for AppImage compatibility
+            command = `sleep 0.6 && YDOTOOL_SOCKET="${socketPath}" /usr/bin/ydotool key 29:1 47:1 47:0 29:0`;
             console.log('[Main] Using ydotool for Wayland (raw keycodes)');
         } else {
             // Use xdotool for X11
-            command = 'sleep 0.6 && xdotool keyup Meta Super Ctrl Alt Shift && xdotool key --clearmodifiers ctrl+v';
+            command = 'sleep 0.6 && /usr/bin/xdotool keyup Meta Super Ctrl Alt Shift && /usr/bin/xdotool key --clearmodifiers ctrl+v';
             console.log('[Main] Using xdotool for X11');
         }
 
