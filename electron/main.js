@@ -1,8 +1,11 @@
-const { app, BrowserWindow, ipcMain, dialog, globalShortcut, Menu } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, globalShortcut, Menu, clipboard } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const Store = require('electron-store');
 const OpenAI = require('openai');
+
+// Enable GlobalShortcutsPortal for Wayland (must be before app ready)
+app.commandLine.appendSwitch('enable-features', 'GlobalShortcutsPortal');
 
 // Initialize secure settings store
 const store = new Store({
@@ -316,21 +319,48 @@ ipcMain.handle('show-message-box', async (event, options) => {
 });
 
 ipcMain.handle('copy-to-clipboard', (event, text) => {
-    clipboard.writeText(text);
-    return true;
+    console.log('[Main] Copying to clipboard:', text);
+    try {
+        clipboard.writeText(text);
+        console.log('[Main] Clipboard write success');
+        return true;
+    } catch (error) {
+        console.error('[Main] Clipboard write failed:', error);
+        return false;
+    }
 });
 
 ipcMain.handle('paste-text', async (event) => {
+    console.log('[Main] Attempting auto-paste');
+    const isWayland = process.env.XDG_SESSION_TYPE === 'wayland';
+
     return new Promise((resolve, reject) => {
-        // Use xdotool to simulate Ctrl+V
-        // --clearmodifiers ensures no other keys are stuck
-        exec('xdotool key --clearmodifiers ctrl+v', (error, stdout, stderr) => {
+        let command;
+        if (isWayland) {
+            // Use ydotool for Wayland (must be installed: sudo dnf install ydotool)
+            // ydotool uses raw keycodes: 29=Ctrl, 47=V
+            // Format: keycode:1 (press) keycode:0 (release)
+            command = 'sleep 0.6 && ydotool key 29:1 47:1 47:0 29:0';
+            console.log('[Main] Using ydotool for Wayland (raw keycodes)');
+        } else {
+            // Use xdotool for X11
+            command = 'sleep 0.6 && xdotool keyup Meta Super Ctrl Alt Shift && xdotool key --clearmodifiers ctrl+v';
+            console.log('[Main] Using xdotool for X11');
+        }
+
+        console.log('[Main] Executing command:', command);
+        exec(command, (error, stdout, stderr) => {
             if (error) {
-                console.error(`exec error: ${error}`);
-                resolve(false);
+                console.error(`[Main] Auto-paste exec error: ${error}`);
+                console.error(`[Main] Stderr: ${stderr}`);
+                if (isWayland && stderr.includes('ydotool')) {
+                    console.error('[Main] ydotool not installed or ydotoold not running.');
+                }
+                resolve({ success: false, error: error.message });
                 return;
             }
-            resolve(true);
+            console.log('[Main] Auto-paste command success');
+            resolve({ success: true });
         });
     });
 });
